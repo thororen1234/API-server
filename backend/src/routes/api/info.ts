@@ -8,9 +8,9 @@ import { translate } from '@vitalets/google-translate-api';
 import languages from '../../assets/JSON/languages.json';
 import radioStationData from '../../assets/JSON/radio-stations.json';
 import type { RadioStation } from '../../types';
-import * as geniusLyrics from 'genius-lyrics';
 export type redditType = 'hot' | 'new';
 import type Client from '../../helpers/Client';
+const { getSong } = require('genius-lyrics-api');
 
 type redditChild = {
 	data: object
@@ -24,7 +24,6 @@ export function run(client: Client) {
 	const RedditHandler = new CacheHandler();
 	const NPMHandler = new CacheHandler();
 	const WeatherHandler = new CacheHandler();
-	const LyricsFetcher = new geniusLyrics.Client();
 
 	/**
 	  * @openapi
@@ -257,17 +256,24 @@ export function run(client: Client) {
 		// Get text to translate
 		const title = req.query.title as string;
 		const artist = req.query.artist as string;
+		const apiKey = process.env.geniusAPI;
 		if (!title) return Error.MissingQuery(res, 'title');
 
 		try {
-			const searchQuery = (artist == undefined) ? title : `${artist} - ${title}`;
-			const search = await LyricsFetcher.songs.search(searchQuery);
+			const searchQuery = {
+				apiKey: apiKey,
+				title: (artist == undefined) ? title : `${artist} - ${title}`,
+				optimizeQuery: true
+			};
+			const search = await getSong(searchQuery);
 			if (search.length == 0) return Error.GenericError(res, `No lyrics could be found from a song called: ${title}.`);
 
 			const lyrics = await search[0].lyrics();
 			res.json({ data: {
 				name: search[0].title,
 				artist: search[0].artist.name,
+				url: search[0].url,
+				albumArt: search[0].albumArt,
 				lyrics: lyrics.split('\n'),
 			},
 			});

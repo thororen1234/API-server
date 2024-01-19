@@ -55,7 +55,7 @@
     "dotenv": "^16.3.1",
     "ejs": "^3.1.8",
     "express": "^4.17.2",
-    "genius-lyrics": "^4.4.3",
+    "genius-lyrics-api": "^3.2.0",
     "helmet": "^6.0.0",
     "joi": "^17.9.2",
     "minecraft-server-util": "^5.4.4",
